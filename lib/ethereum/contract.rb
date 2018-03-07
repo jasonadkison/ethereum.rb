@@ -5,7 +5,7 @@ module Ethereum
 
     attr_reader :address
     attr_accessor :key
-    attr_accessor :gas_limit, :gas_price
+    attr_accessor :gas_limit, :gas_price, :nonce
     attr_accessor :code, :name, :abi, :class_object, :sender, :deployment, :client
     attr_accessor :events, :functions, :constructor_inputs
     attr_accessor :call_raw_proxy, :call_proxy, :transact_proxy, :transact_and_wait_proxy
@@ -71,7 +71,8 @@ module Ethereum
             abi = artifacts['abi']
             # The truffle artifacts store bytecodes with a 0x tag, which we need to remove
             # this may need to be 'deployedBytecode'
-            code = (artifacts['bytecode'].start_with?('0x')) ? artifacts['bytecode'][2, artifacts['bytecode'].length] : artifacts['bytecode']
+            code_key = artifacts['bytecode'].present? ? 'bytecode' : 'unlinked_binary'
+            code = (artifacts[code_key].start_with?('0x')) ? artifacts[code_key][2, artifacts[code_key].length] : artifacts[code_key]
             unless address
               address = if client
                           network_id = client.net_version['result']
@@ -249,7 +250,7 @@ module Ethereum
         extend Forwardable
         def_delegators :parent, :deploy_payload, :deploy_args, :call_payload, :call_args
         def_delegators :parent, :signed_deploy, :key, :key=
-        def_delegators :parent, :gas_limit, :gas_price, :gas_limit=, :gas_price=
+        def_delegators :parent, :gas_limit, :gas_price, :gas_limit=, :gas_price=, :nonce, :nonce=
         def_delegators :parent, :abi, :deployment, :events
         def_delegators :parent, :estimate, :deploy, :deploy_and_wait
         def_delegators :parent, :address, :address=, :sender, :sender=
